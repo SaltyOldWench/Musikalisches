@@ -1,0 +1,132 @@
+<script src="https://cdn.jsdelivr.net/gh/netizenorg/netnet-standard-library/build/nn.min.js"></script>
+<script src="https://unpkg.com/tone"></script>
+
+<script>
+/* global nn */
+
+let boxElements = []; // Array to store references to boxes
+
+
+function title() {
+  nn.create('div').content('alberto' + "'s" + ' top 3 songs at this hour')
+    .css({
+    position: 'absolute',
+    left: nn.width /2,
+    transform: 'translateX(-50%)',
+    top: 30,
+    fontSize: '96px',
+    fontFamily: 'cursive',
+    textAlign: 'center',
+  }).addTo('body')
+}
+  
+function createBox(label, index) {
+  const box = nn.create('div')
+    .set({
+      innerText: label,
+      style: `
+        width: 150px;
+        height: 100px;
+        margin: 10px;
+        padding: 20px;
+        background-color: lightblue;
+        border: 2px solid black;
+        text-align: center;
+        font-family: sans-serif;
+        font-size: 16px;
+        border-radius: 8px;
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+      `
+    })
+    .addTo('#box-container');
+
+  // Save reference to box so we can change it later via keyboard
+  boxElements[index] = box;
+}
+
+function boxes() {
+  // Box container
+  nn.create('div')
+    .set({
+      id: 'box-container',
+      style: `
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        flex-wrap: wrap;
+        margin-top: 20px;
+      `
+    })
+    .addTo('body');
+
+  createBox('Play Sound 1 (Key 1)', 0);
+  createBox('Play Sound 2 (Key 2)', 1);
+  createBox('Play Sound 3 (Key 3)', 2);
+
+  // Listen for key presses
+  document.addEventListener('keydown', (e) => {
+    if (e.key === '1') {
+      playSound('C4');
+      changeBoxVisual(0);
+    }
+    if (e.key === '2') {
+      playSound('E4');
+      changeBoxVisual(1);
+    }
+    if (e.key === '3') {
+      playSound('G4');
+      changeBoxVisual(2);
+    }
+  });
+}
+
+function playSound(note) {
+  const synth = new Tone.Synth().toDestination();
+  synth.triggerAttackRelease(note, '8n');
+}
+
+function changeBoxVisual(index) {
+  const box = boxElements[index];
+  if (!box) return;
+
+  // Example: Change color and text
+  box.set({
+    innerText: 'Triggered!',
+    style: `
+      background-color: hotpink;
+      color: white;
+      border: 2px solid black;
+      width: 150px;
+      height: 100px;
+      padding: 20px;
+      margin: 10px;
+      font-family: sans-serif;
+      font-size: 16px;
+      text-align: center;
+      border-radius: 8px;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+    `
+  });
+
+  // Optional: Hide it after 1 second
+  setTimeout(() => {
+    box.set({ style: 'display: none;' });
+  }, 1000);
+}
+
+function waitForToneAndRunBoxes() {
+  if (typeof Tone !== 'undefined') {
+    title();
+    boxes();
+  } else {
+    setTimeout(waitForToneAndRunBoxes, 100);
+  }
+}
+
+nn.on('load', waitForToneAndRunBoxes);
+
+</script>
